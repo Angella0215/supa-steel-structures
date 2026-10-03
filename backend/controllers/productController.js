@@ -23,27 +23,32 @@ const getProductById = async (req, res) => {
   }
 };
 
-// @desc    Create a product (with images)
+// @desc    Create a product (with image upload)
 const createProduct = async (req, res) => {
   try {
     const { name, category, description, price, timeframe, autoCADDrawing, isAvailable } = req.body;
 
     // Get image URLs from Cloudinary
-    const images = req.files ? req.files.map(file => file.path) : [];
+   let images = [];
+if (req.files && req.files.length > 0) {
+  images = req.files.map(file => `http://localhost:5000/uploads/${file.filename}`);
+}
+    
 
     const product = await Product.create({
       name,
       category,
       description,
-      price,
+      price: Number(price),
       timeframe,
       images,
-      autoCADDrawing,
+      autoCADDrawing: autoCADDrawing || '',
       isAvailable: isAvailable === 'true' || isAvailable === true,
     });
 
     res.status(201).json(product);
   } catch (error) {
+    console.error('Create Product Error:', error);
     res.status(400).json({ message: error.message });
   }
 };

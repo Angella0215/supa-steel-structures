@@ -11,7 +11,7 @@ const {
 
 router.route('/')
   .get(getProducts)
-  .post(upload.array('images', 5), createProduct); // max 5 images
+  .post(upload.array('images', 5), createProduct);
 
 router.route('/:id')
   .get(getProductById)

@@ -11,9 +11,16 @@ function Products() {
       setProducts(data);
       setLoading(false);
     };
-
     fetchProducts();
   }, []);
+
+  const handleRequestQuote = (product) => {
+    const phoneNumber = '265881826167'; // Malawi number without + or spaces
+    const message = `Hello Supa Steel Structures,\n\nI am interested in this product:\n\n*${product.name}*\nPrice: MWK ${product.price?.toLocaleString()}\nTimeframe: ${product.timeframe}\n\nPlease give me more details.`;
+    
+    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
 
   if (loading) {
     return <p>Loading products...</p>;
@@ -27,7 +34,7 @@ function Products() {
       </p>
 
       {products.length === 0 ? (
-        <p>No products found in the database yet. You can add products using Thunder Client.</p>
+        <p>No products found.</p>
       ) : (
         <div style={{
           display: 'grid',
@@ -73,16 +80,20 @@ function Products() {
                 <p style={{ color: '#666', margin: '0 0 15px 0' }}>
                   Timeframe: {product.timeframe}
                 </p>
-                <button style={{
-                  backgroundColor: '#1e3a8a',
-                  color: 'white',
-                  border: 'none',
-                  padding: '10px 18px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}>
-                  Request Quote
+                <button
+                  onClick={() => handleRequestQuote(product)}
+                  style={{
+                    backgroundColor: '#25D366', // WhatsApp green
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 18px',
+                    borderRadius: '6px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    width: '100%'
+                  }}
+                >
+                  Request Quote on WhatsApp
                 </button>
               </div>
             </div>

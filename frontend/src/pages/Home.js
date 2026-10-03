@@ -99,17 +99,24 @@ function Home() {
               <p style={{ color: '#666', margin: '0 0 12px 0', fontSize: '14px' }}>
                 {product.timeframe}
               </p>
-              <button style={{
-                backgroundColor: '#1e3a8a',
-                color: 'white',
-                border: 'none',
-                padding: '9px 16px',
-                borderRadius: '6px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}>
-                Request Quote
-              </button>
+             <button
+  onClick={() => {
+    const phoneNumber = '265881826167';
+    const message = `Hello Supa Steel Structures,\n\nI am interested in: *${product.name}*\nPrice: ${product.price}\n\nPlease give me more details.`;
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+  }}
+  style={{
+    backgroundColor: '#25D366',
+    color: 'white',
+    border: 'none',
+    padding: '9px 16px',
+    borderRadius: '6px',
+    fontWeight: 'bold',
+    cursor: 'pointer'
+  }}
+>
+  Request Quote
+</button>
             </div>
           </div>
         ))}
