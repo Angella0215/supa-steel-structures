@@ -6,11 +6,9 @@ function Admin() {
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
- const [loading, setLoading] = useState(true); // eslint-disable-line no-unused-vars
   const [loadingOrders, setLoadingOrders] = useState(true);
   const navigate = useNavigate();
 
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     category: 'Desk',
@@ -40,10 +38,8 @@ function Admin() {
   }, [navigate]);
 
   const loadProducts = async () => {
-    setLoading(true);
     const data = await getProducts();
     setProducts(data);
-    setLoading(false);
   };
 
   const loadOrders = async () => {
@@ -86,9 +82,7 @@ function Admin() {
     try {
       const response = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
 
@@ -105,10 +99,7 @@ function Admin() {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleImageChange = (e) => {
@@ -164,7 +155,7 @@ function Admin() {
 
   if (user.role !== 'admin') {
     return (
-      <div style={{ textAlign: 'center', marginTop: '80px' }}>
+      <div style={{ textAlign: 'center', marginTop: '60px', padding: '20px' }}>
         <h1 style={{ color: '#dc2626' }}>Access Denied</h1>
         <p>You do not have permission to access the Admin Dashboard.</p>
         <button
@@ -174,7 +165,7 @@ function Admin() {
             backgroundColor: '#1e3a8a',
             color: 'white',
             border: 'none',
-            padding: '10px 20px',
+            padding: '12px 24px',
             borderRadius: '6px',
             cursor: 'pointer'
           }}
@@ -187,8 +178,17 @@ function Admin() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ color: '#1e3a8a' }}>Admin Panel</h1>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '10px',
+        marginBottom: '10px'
+      }}>
+        <h1 style={{ color: '#1e3a8a', margin: 0, fontSize: 'clamp(22px, 5vw, 28px)' }}>
+          Admin Panel
+        </h1>
         <button
           onClick={handleLogout}
           style={{
@@ -204,84 +204,94 @@ function Admin() {
         </button>
       </div>
 
-      <p>Welcome, {user.name} (Admin)</p>
+      <p style={{ marginBottom: '25px' }}>Welcome, {user.name} (Admin)</p>
 
       {/* ========== CUSTOMER REQUESTS ========== */}
-      <div style={{ marginTop: '40px', marginBottom: '50px' }}>
-        <h2 style={{ color: '#1e3a8a' }}>Customer Requests ({orders.length})</h2>
+      <div style={{ marginBottom: '40px' }}>
+        <h2 style={{ color: '#1e3a8a', fontSize: '20px' }}>
+          Customer Requests ({orders.length})
+        </h2>
 
         {loadingOrders ? (
           <p>Loading requests...</p>
         ) : orders.length === 0 ? (
           <p style={{ color: '#666' }}>No customer requests yet.</p>
         ) : (
-          <div style={{ marginTop: '20px' }}>
+          <div style={{ marginTop: '15px' }}>
             {orders.map(order => (
               <div key={order._id} style={{
                 border: '1px solid #ddd',
                 borderRadius: '10px',
-                padding: '20px',
-                marginBottom: '15px',
+                padding: '16px',
+                marginBottom: '12px',
                 backgroundColor: 'white'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                  <div>
-                    <strong style={{ fontSize: '17px' }}>
-                      {order.productName || 'Custom Request'}
-                    </strong>
-                    <p style={{ margin: '5px 0', color: '#555' }}>
-                      Customer: {order.customerName} | Phone: {order.customerPhone}
-                    </p>
-                    <p style={{ margin: '5px 0', color: '#555' }}>
-                      Email: {order.customerEmail}
-                    </p>
-                  </div>
-
-                  {/* Status + WhatsApp Button */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
-                    <select
-                      value={order.status}
-                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: '1px solid #ccc',
-                        fontWeight: '500'
-                      }}
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Ready for Collection">Ready for Collection</option>
-                      <option value="Completed">Completed</option>
-                      <option value="Cancelled">Cancelled</option>
-                    </select>
-
-                    <button
-                      onClick={() => {
-                        const phone = order.customerPhone.replace(/\s+/g, '').replace(/^0/, '265');
-                        const text = `Hello ${order.customerName}, this is Supa Steel Structures.\n\nRegarding your request for: ${order.productName || 'your product'}\n\n`;
-                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
-                      }}
-                      style={{
-                        backgroundColor: '#25D366',
-                        color: 'white',
-                        border: 'none',
-                        padding: '7px 14px',
-                        borderRadius: '6px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                      }}
-                    >
-                      Message on WhatsApp
-                    </button>
-                  </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <strong style={{ fontSize: '16px', display: 'block', marginBottom: '6px' }}>
+                    {order.productName || 'Custom Request'}
+                  </strong>
+                  <p style={{ margin: '4px 0', color: '#555', fontSize: '14px' }}>
+                    Customer: {order.customerName}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#555', fontSize: '14px' }}>
+                    Phone: {order.customerPhone}
+                  </p>
+                  <p style={{ margin: '4px 0', color: '#555', fontSize: '14px' }}>
+                    Email: {order.customerEmail}
+                  </p>
                 </div>
 
-                <p style={{ color: '#444', margin: '10px 0' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '10px',
+                  marginBottom: '12px'
+                }}>
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                    style={{
+                      padding: '10px',
+                      borderRadius: '6px',
+                      border: '1px solid #ccc',
+                      fontWeight: '500',
+                      fontSize: '15px',
+                      width: '100%'
+                    }}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Ready for Collection">Ready for Collection</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+
+                  <button
+                    onClick={() => {
+                      const phone = order.customerPhone.replace(/\s+/g, '').replace(/^0/, '265');
+                      const text = `Hello ${order.customerName}, this is Supa Steel Structures.\n\nRegarding your request for: ${order.productName || 'your product'}\n\n`;
+                      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+                    }}
+                    style={{
+                      backgroundColor: '#25D366',
+                      color: 'white',
+                      border: 'none',
+                      padding: '11px',
+                      borderRadius: '6px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      fontSize: '15px',
+                      width: '100%'
+                    }}
+                  >
+                    Message on WhatsApp
+                  </button>
+                </div>
+
+                <p style={{ color: '#444', margin: '10px 0', fontSize: '14px' }}>
                   <strong>Message:</strong> {order.specialRequests}
                 </p>
-                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>
+                <p style={{ color: '#888', fontSize: '12px', margin: 0 }}>
                   Submitted: {new Date(order.createdAt).toLocaleString()}
                 </p>
               </div>
@@ -293,16 +303,33 @@ function Admin() {
       {/* ========== ADD PRODUCT FORM ========== */}
       <div style={{
         backgroundColor: '#f8fafc',
-        padding: '25px',
+        padding: '20px',
         borderRadius: '10px',
-        border: '1px solid #e2e8f0'
+        border: '1px solid #e2e8f0',
+        marginBottom: '40px'
       }}>
-        <h2 style={{ marginTop: 0, color: '#1e3a8a' }}>Add New Product</h2>
+        <h2 style={{ marginTop: 0, color: '#1e3a8a', fontSize: '20px' }}>Add New Product</h2>
 
         <form onSubmit={handleAddProduct}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-            <input type="text" name="name" placeholder="Product Name" value={formData.name} onChange={handleChange} required style={inputStyle} />
-            <select name="category" value={formData.category} onChange={handleChange} style={inputStyle}>
+          <div style={{ marginBottom: '12px' }}>
+            <input 
+              type="text" 
+              name="name" 
+              placeholder="Product Name" 
+              value={formData.name} 
+              onChange={handleChange} 
+              required 
+              style={inputStyle} 
+            />
+          </div>
+
+          <div style={{ marginBottom: '12px' }}>
+            <select 
+              name="category" 
+              value={formData.category} 
+              onChange={handleChange} 
+              style={inputStyle}
+            >
               <option value="Desk">Desk</option>
               <option value="Gate">Gate</option>
               <option value="Door">Door</option>
@@ -313,70 +340,141 @@ function Admin() {
             </select>
           </div>
 
-          <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} required rows="3" style={{ ...inputStyle, marginBottom: '15px' }} />
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-            <input type="number" name="price" placeholder="Price (e.g. 220000)" value={formData.price} onChange={handleChange} required style={inputStyle} />
-            <input type="text" name="timeframe" placeholder="Timeframe (e.g. 7-10 working days)" value={formData.timeframe} onChange={handleChange} required style={inputStyle} />
+          <div style={{ marginBottom: '12px' }}>
+            <textarea 
+              name="description" 
+              placeholder="Description" 
+              value={formData.description} 
+              onChange={handleChange} 
+              required 
+              rows="3" 
+              style={inputStyle} 
+            />
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Product Image</label>
-            <input type="file" accept="image/*" onChange={handleImageChange} required style={{ width: '100%' }} />
+          <div style={{ marginBottom: '12px' }}>
+            <input 
+              type="number" 
+              name="price" 
+              placeholder="Price (e.g. 220000)" 
+              value={formData.price} 
+              onChange={handleChange} 
+              required 
+              style={inputStyle} 
+            />
           </div>
 
-          <button type="submit" style={{
-            backgroundColor: '#1e3a8a',
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '6px',
-            fontWeight: 'bold',
-            cursor: 'pointer'
-          }}>
+          <div style={{ marginBottom: '12px' }}>
+            <input 
+              type="text" 
+              name="timeframe" 
+              placeholder="Timeframe (e.g. 7-10 working days)" 
+              value={formData.timeframe} 
+              onChange={handleChange} 
+              required 
+              style={inputStyle} 
+            />
+          </div>
+
+          <div style={{ marginBottom: '18px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold', fontSize: '14px' }}>
+              Product Image
+            </label>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageChange} 
+              required 
+              style={{ width: '100%' }} 
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            style={{
+              backgroundColor: '#1e3a8a',
+              color: 'white',
+              border: 'none',
+              padding: '13px',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              width: '100%',
+              fontSize: '16px'
+            }}
+          >
             Add Product
           </button>
         </form>
       </div>
 
       {/* ========== PRODUCT LIST ========== */}
-      <h2 style={{ marginTop: '50px' }}>All Products ({products.length})</h2>
+      <h2 style={{ color: '#1e3a8a', fontSize: '20px' }}>
+        All Products ({products.length})
+      </h2>
 
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ marginTop: '15px' }}>
         {products.map(product => (
           <div key={product._id} style={{
             border: '1px solid #ddd',
             borderRadius: '8px',
-            padding: '15px',
-            marginBottom: '15px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '20px'
+            padding: '14px',
+            marginBottom: '12px',
+            backgroundColor: 'white'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               {product.images && product.images[0] ? (
-                <img src={product.images[0]} alt={product.name} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '6px' }} />
+                <img 
+                  src={product.images[0]} 
+                  alt={product.name} 
+                  style={{ 
+                    width: '70px', 
+                    height: '55px', 
+                    objectFit: 'cover', 
+                    borderRadius: '6px',
+                    flexShrink: 0
+                  }} 
+                />
               ) : (
-                <div style={{ width: '80px', height: '60px', backgroundColor: '#e5e7eb', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#6b7280' }}>
+                <div style={{ 
+                  width: '70px', 
+                  height: '55px', 
+                  backgroundColor: '#e5e7eb', 
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '11px',
+                  color: '#6b7280',
+                  flexShrink: 0
+                }}>
                   No Image
                 </div>
               )}
               <div>
-                <strong>{product.name}</strong> — MWK {product.price?.toLocaleString()}
-                <br />
-                <small>{product.timeframe}</small>
+                <strong style={{ fontSize: '15px' }}>{product.name}</strong>
+                <p style={{ margin: '4px 0', color: '#1e3a8a', fontWeight: 'bold' }}>
+                  MWK {product.price?.toLocaleString()}
+                </p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
+                  {product.timeframe}
+                </p>
               </div>
             </div>
 
-            <button onClick={() => handleDelete(product._id)} style={{
-              backgroundColor: '#dc2626',
-              color: 'white',
-              border: 'none',
-              padding: '8px 14px',
-              borderRadius: '5px',
-              cursor: 'pointer'
-            }}>
+            <button 
+              onClick={() => handleDelete(product._id)} 
+              style={{
+                backgroundColor: '#dc2626',
+                color: 'white',
+                border: 'none',
+                padding: '10px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                width: '100%',
+                fontWeight: 'bold'
+              }}
+            >
               Delete
             </button>
           </div>
@@ -388,10 +486,11 @@ function Admin() {
 
 const inputStyle = {
   width: '100%',
-  padding: '10px',
+  padding: '12px',
   borderRadius: '6px',
   border: '1px solid #ccc',
-  fontSize: '15px'
+  fontSize: '16px',
+  boxSizing: 'border-box'
 };
 
 export default Admin;

@@ -29,7 +29,6 @@ function Dashboard() {
       return;
     }
 
-    // Load the customer's previous requests
     fetchOrders(parsedUser.email);
   }, [navigate]);
 
@@ -37,8 +36,6 @@ function Dashboard() {
     try {
       const response = await fetch('http://localhost:5000/api/orders');
       const data = await response.json();
-
-      // Show only the orders that belong to this customer
       const myOrders = data.filter(order => order.customerEmail === email);
       setOrders(myOrders);
     } catch (err) {
@@ -72,7 +69,7 @@ function Dashboard() {
 
       if (response.ok) {
         const newOrder = await response.json();
-        setOrders([newOrder, ...orders]); // add to the top of the list
+        setOrders([newOrder, ...orders]);
         setSuccess('Your request has been submitted successfully! We will contact you soon.');
         setProductName('');
         setMessage('');
@@ -94,21 +91,21 @@ function Dashboard() {
 
   return (
     <div>
-      <h1 style={{ color: '#1e3a8a' }}>My Dashboard</h1>
-      <p style={{ marginBottom: '30px' }}>
+      <h1 style={{ color: '#1e3a8a', fontSize: 'clamp(24px, 5vw, 32px)' }}>My Dashboard</h1>
+      <p style={{ marginBottom: '25px' }}>
         Welcome, <strong>{user.name}</strong>!
       </p>
 
       {/* Quote Request Form */}
       <div style={{
         backgroundColor: '#f8fafc',
-        padding: '30px',
+        padding: '20px',
         borderRadius: '12px',
         border: '1px solid #e2e8f0',
-        marginBottom: '40px'
+        marginBottom: '35px'
       }}>
-        <h2 style={{ marginTop: 0, color: '#1e3a8a' }}>Request a Quote</h2>
-        <p style={{ color: '#555', marginBottom: '25px' }}>
+        <h2 style={{ marginTop: 0, color: '#1e3a8a', fontSize: '20px' }}>Request a Quote</h2>
+        <p style={{ color: '#555', marginBottom: '20px', fontSize: '15px' }}>
           Prefer not to use WhatsApp? Fill this form and we will contact you.
         </p>
 
@@ -118,7 +115,8 @@ function Dashboard() {
             color: '#166534',
             padding: '12px',
             borderRadius: '6px',
-            marginBottom: '20px'
+            marginBottom: '15px',
+            fontSize: '14px'
           }}>
             {success}
           </div>
@@ -130,15 +128,16 @@ function Dashboard() {
             color: '#b91c1c',
             padding: '12px',
             borderRadius: '6px',
-            marginBottom: '20px'
+            marginBottom: '15px',
+            fontSize: '14px'
           }}>
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
               Product you are interested in
             </label>
             <input
@@ -151,8 +150,8 @@ function Dashboard() {
             />
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
               Your Phone Number
             </label>
             <input
@@ -165,8 +164,8 @@ function Dashboard() {
             />
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
+          <div style={{ marginBottom: '18px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500', fontSize: '14px' }}>
               Message / Special Requirements
             </label>
             <textarea
@@ -186,11 +185,12 @@ function Dashboard() {
               backgroundColor: '#1e3a8a',
               color: 'white',
               border: 'none',
-              padding: '12px 28px',
+              padding: '13px 20px',
               borderRadius: '6px',
               fontWeight: 'bold',
               cursor: 'pointer',
-              fontSize: '16px'
+              fontSize: '16px',
+              width: '100%'
             }}
           >
             {loading ? 'Submitting...' : 'Submit Request'}
@@ -200,41 +200,41 @@ function Dashboard() {
 
       {/* Previous Requests */}
       <div>
-        <h2 style={{ color: '#1e3a8a' }}>My Previous Requests</h2>
+        <h2 style={{ color: '#1e3a8a', fontSize: '20px' }}>My Previous Requests</h2>
 
         {loadingOrders ? (
           <p>Loading your requests...</p>
         ) : orders.length === 0 ? (
           <p style={{ color: '#666' }}>You have not submitted any requests yet.</p>
         ) : (
-          <div style={{ marginTop: '20px' }}>
+          <div style={{ marginTop: '15px' }}>
             {orders.map(order => (
               <div key={order._id} style={{
                 border: '1px solid #ddd',
                 borderRadius: '10px',
-                padding: '20px',
-                marginBottom: '15px',
+                padding: '16px',
+                marginBottom: '12px',
                 backgroundColor: 'white'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <strong style={{ fontSize: '17px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                  <strong style={{ fontSize: '16px' }}>
                     {order.productName || 'Custom Request'}
                   </strong>
                   <span style={{
                     backgroundColor: order.status === 'Pending' ? '#fef3c7' : '#dcfce7',
                     color: order.status === 'Pending' ? '#92400e' : '#166534',
-                    padding: '4px 12px',
+                    padding: '4px 10px',
                     borderRadius: '20px',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: '500'
                   }}>
                     {order.status}
                   </span>
                 </div>
-                <p style={{ color: '#555', margin: '8px 0' }}>
+                <p style={{ color: '#555', margin: '6px 0', fontSize: '14px', lineHeight: '1.4' }}>
                   {order.specialRequests}
                 </p>
-                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>
+                <p style={{ color: '#888', fontSize: '12px', margin: 0 }}>
                   Submitted on: {new Date(order.createdAt).toLocaleDateString()}
                 </p>
               </div>
@@ -248,10 +248,11 @@ function Dashboard() {
 
 const inputStyle = {
   width: '100%',
-  padding: '11px',
+  padding: '12px',
   borderRadius: '6px',
   border: '1px solid #ccc',
-  fontSize: '15px'
+  fontSize: '16px',
+  boxSizing: 'border-box'
 };
 
 export default Dashboard;
