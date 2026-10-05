@@ -5,7 +5,9 @@ import { getProducts } from '../services/api';
 function Admin() {
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState([]);
+ const [loading, setLoading] = useState(true); // eslint-disable-line no-unused-vars
+  const [loadingOrders, setLoadingOrders] = useState(true);
   const navigate = useNavigate();
 
   // Form state
@@ -22,7 +24,6 @@ function Admin() {
     const storedUser = localStorage.getItem('user');
     
     if (!storedUser) {
-      // Not logged in
       navigate('/login');
       return;
     }
@@ -31,12 +32,11 @@ function Admin() {
     setUser(parsedUser);
 
     if (parsedUser.role !== 'admin') {
-      // Logged in but not admin
       return;
     }
 
-    // Load products only for admin
     loadProducts();
+    loadOrders();
   }, [navigate]);
 
   const loadProducts = async () => {
@@ -44,6 +44,18 @@ function Admin() {
     const data = await getProducts();
     setProducts(data);
     setLoading(false);
+  };
+
+  const loadOrders = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/orders');
+      const data = await response.json();
+      setOrders(data);
+    } catch (error) {
+      console.error('Failed to load orders');
+    } finally {
+      setLoadingOrders(false);
+    }
   };
 
   const handleLogout = () => {
@@ -67,6 +79,28 @@ function Admin() {
       }
     } catch (error) {
       alert('Error deleting product');
+    }
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        setOrders(orders.map(order => 
+          order._id === orderId ? { ...order, status: newStatus } : order
+        ));
+      } else {
+        alert('Failed to update status');
+      }
+    } catch (error) {
+      alert('Error updating status');
     }
   };
 
@@ -124,12 +158,10 @@ function Admin() {
     }
   };
 
-  // Not logged in (should already redirect, but safety)
   if (!user) {
     return <p>Redirecting to login...</p>;
   }
 
-  // Logged in but not admin
   if (user.role !== 'admin') {
     return (
       <div style={{ textAlign: 'center', marginTop: '80px' }}>
@@ -153,11 +185,6 @@ function Admin() {
     );
   }
 
-  // ADMIN DASHBOARD
-  if (loading) {
-    return <p>Loading products...</p>;
-  }
-
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -179,12 +206,95 @@ function Admin() {
 
       <p>Welcome, {user.name} (Admin)</p>
 
-      {/* ADD PRODUCT FORM */}
+      {/* ========== CUSTOMER REQUESTS ========== */}
+      <div style={{ marginTop: '40px', marginBottom: '50px' }}>
+        <h2 style={{ color: '#1e3a8a' }}>Customer Requests ({orders.length})</h2>
+
+        {loadingOrders ? (
+          <p>Loading requests...</p>
+        ) : orders.length === 0 ? (
+          <p style={{ color: '#666' }}>No customer requests yet.</p>
+        ) : (
+          <div style={{ marginTop: '20px' }}>
+            {orders.map(order => (
+              <div key={order._id} style={{
+                border: '1px solid #ddd',
+                borderRadius: '10px',
+                padding: '20px',
+                marginBottom: '15px',
+                backgroundColor: 'white'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <div>
+                    <strong style={{ fontSize: '17px' }}>
+                      {order.productName || 'Custom Request'}
+                    </strong>
+                    <p style={{ margin: '5px 0', color: '#555' }}>
+                      Customer: {order.customerName} | Phone: {order.customerPhone}
+                    </p>
+                    <p style={{ margin: '5px 0', color: '#555' }}>
+                      Email: {order.customerEmail}
+                    </p>
+                  </div>
+
+                  {/* Status + WhatsApp Button */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
+                    <select
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #ccc',
+                        fontWeight: '500'
+                      }}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Ready for Collection">Ready for Collection</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+
+                    <button
+                      onClick={() => {
+                        const phone = order.customerPhone.replace(/\s+/g, '').replace(/^0/, '265');
+                        const text = `Hello ${order.customerName}, this is Supa Steel Structures.\n\nRegarding your request for: ${order.productName || 'your product'}\n\n`;
+                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+                      }}
+                      style={{
+                        backgroundColor: '#25D366',
+                        color: 'white',
+                        border: 'none',
+                        padding: '7px 14px',
+                        borderRadius: '6px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      Message on WhatsApp
+                    </button>
+                  </div>
+                </div>
+
+                <p style={{ color: '#444', margin: '10px 0' }}>
+                  <strong>Message:</strong> {order.specialRequests}
+                </p>
+                <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>
+                  Submitted: {new Date(order.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ========== ADD PRODUCT FORM ========== */}
       <div style={{
         backgroundColor: '#f8fafc',
         padding: '25px',
         borderRadius: '10px',
-        marginTop: '30px',
         border: '1px solid #e2e8f0'
       }}>
         <h2 style={{ marginTop: 0, color: '#1e3a8a' }}>Add New Product</h2>
@@ -229,7 +339,7 @@ function Admin() {
         </form>
       </div>
 
-      {/* PRODUCT LIST */}
+      {/* ========== PRODUCT LIST ========== */}
       <h2 style={{ marginTop: '50px' }}>All Products ({products.length})</h2>
 
       <div style={{ marginTop: '20px' }}>

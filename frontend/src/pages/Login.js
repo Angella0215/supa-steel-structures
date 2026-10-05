@@ -24,17 +24,18 @@ function Login() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        // Save user info and token
-        localStorage.setItem('user', JSON.stringify(data));
-        
-        // Redirect based on role
-        if (data.role === 'admin') {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
-      } else {
+     if (response.ok) {
+  // Save user info and token
+  localStorage.setItem('user', JSON.stringify(data));
+  
+  // Redirect based on role
+  if (data.role === 'admin') {
+    navigate('/admin');
+  } else {
+    navigate('/dashboard');   // Customers go to Dashboard
+  }
+}
+       else {
         setError(data.message || 'Login failed');
       }
     } catch (err) {

@@ -16,15 +16,17 @@ const orderSchema = new mongoose.Schema(
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
-      required: true,
+      required: false,           // no longer required
+    },
+    productName: {               // new field for custom requests
+      type: String,
     },
     quantity: {
       type: Number,
-      required: true,
       default: 1,
     },
     specialRequests: {
-      type: String, // e.g. custom measurements, color, etc.
+      type: String,
     },
     status: {
       type: String,
@@ -32,7 +34,7 @@ const orderSchema = new mongoose.Schema(
       default: 'Pending',
     },
     estimatedCompletion: {
-      type: String, // e.g. "Ready in 8 working days"
+      type: String,
     },
   },
   {

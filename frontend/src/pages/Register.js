@@ -34,7 +34,7 @@ function Register() {
         // Save user info and token
         localStorage.setItem('user', JSON.stringify(data));
         alert('Account created successfully!');
-        navigate('/');
+        navigate('/dashboard');
       } else {
         setError(data.message || 'Registration failed');
       }

@@ -8,6 +8,7 @@ import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Footer from './components/Footer';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -49,36 +50,38 @@ function App() {
             <Link to="/contact" style={linkStyle}>Contact</Link>
 
             {user ? (
-              <>
-                {user.role === 'admin' && (
-                  <Link to="/admin" style={linkStyle}>Admin</Link>
-                )}
-                <span style={{ color: '#bfdbfe', marginLeft: '20px', marginRight: '10px' }}>
-                  Hi, {user.name}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    backgroundColor: 'transparent',
-                    border: '1px solid white',
-                    color: 'white',
-                    padding: '6px 14px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    marginLeft: '10px'
-                  }}
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" style={linkStyle}>Login</Link>
-                <Link to="/register" style={{ ...linkStyle, backgroundColor: 'white', color: '#1e3a8a', padding: '6px 14px', borderRadius: '5px' }}>
-                  Register
-                </Link>
-              </>
-            )}
+  <>
+    {user.role === 'admin' ? (
+      <Link to="/admin" style={linkStyle}>Admin</Link>
+    ) : (
+      <Link to="/dashboard" style={linkStyle}>My Dashboard</Link>
+    )}
+    <span style={{ color: '#bfdbfe', marginLeft: '20px', marginRight: '10px' }}>
+      Hi, {user.name}
+    </span>
+    <button
+      onClick={handleLogout}
+      style={{
+        backgroundColor: 'transparent',
+        border: '1px solid white',
+        color: 'white',
+        padding: '6px 14px',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        marginLeft: '10px'
+      }}
+    >
+      Logout
+    </button>
+  </>
+) : (
+  <>
+    <Link to="/login" style={linkStyle}>Login</Link>
+    <Link to="/register" style={{ ...linkStyle, backgroundColor: 'white', color: '#1e3a8a', padding: '6px 14px', borderRadius: '5px' }}>
+      Register
+    </Link>
+  </>
+)}
           </div>
         </nav>
 
@@ -92,6 +95,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </div>
 

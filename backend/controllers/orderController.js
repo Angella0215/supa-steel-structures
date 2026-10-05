@@ -5,22 +5,25 @@ const Product = require('../models/Product');
 // @route   POST /api/orders
 const createOrder = async (req, res) => {
   try {
-    const { customerName, customerPhone, customerEmail, product, quantity, specialRequests } = req.body;
-
-    // Check if product exists
-    const foundProduct = await Product.findById(product);
-    if (!foundProduct) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    const { 
+      customerName, 
+      customerPhone, 
+      customerEmail, 
+      product, 
+      productName,
+      quantity, 
+      specialRequests 
+    } = req.body;
 
     const order = await Order.create({
       customerName,
       customerPhone,
       customerEmail,
-      product,
-      quantity,
+      product: product || undefined,
+      productName: productName || undefined,
+      quantity: quantity || 1,
       specialRequests,
-      estimatedCompletion: foundProduct.timeframe,
+      status: 'Pending',
     });
 
     res.status(201).json(order);
