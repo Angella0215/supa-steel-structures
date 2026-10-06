@@ -34,7 +34,7 @@ function Dashboard() {
 
   const fetchOrders = async (email) => {
     try {
-      const response = await fetch('http://localhost:5000/api/orders');
+      const response = await fetch('https://supa-steel-structures.onrender.com/api/orders');
       const data = await response.json();
       const myOrders = data.filter(order => order.customerEmail === email);
       setOrders(myOrders);
@@ -52,7 +52,7 @@ function Dashboard() {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch('https://supa-steel-structures.onrender.com/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

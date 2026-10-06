@@ -44,7 +44,7 @@ function Admin() {
 
   const loadOrders = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/orders');
+      const response = await fetch('https://supa-steel-structures.onrender.com/api/orders');
       const data = await response.json();
       setOrders(data);
     } catch (error) {
@@ -63,7 +63,7 @@ function Admin() {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const response = await fetch(`https://supa-steel-structures.onrender.com/api/products/${id}`, {
         method: 'DELETE',
       });
 
@@ -80,7 +80,7 @@ function Admin() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+      const response = await fetch(`https://supa-steel-structures.onrender.com/api/orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -123,7 +123,7 @@ function Admin() {
     data.append('images', imageFile);
 
     try {
-      const response = await fetch('http://localhost:5000/api/products', {
+      const response = await fetch('https://supa-steel-structures.onrender.com/api/products', {
         method: 'POST',
         body: data,
       });
