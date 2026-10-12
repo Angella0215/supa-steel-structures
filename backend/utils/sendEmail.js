@@ -1,22 +1,14 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (options) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: `Supa Steel Structures <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: 'Supa Steel Structures <onboarding@resend.dev>',
     to: options.email,
     subject: options.subject,
     html: options.html,
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 };
 
 module.exports = sendEmail;
