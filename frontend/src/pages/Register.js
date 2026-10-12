@@ -5,7 +5,9 @@ function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -13,6 +15,20 @@ function Register() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('https://supa-steel-structures.onrender.com/api/auth/register', {
@@ -24,22 +40,30 @@ function Register() {
           name,
           email,
           password,
-          role: 'customer' // customers register as customer
+          role: 'customer'
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Save user info and token
-        localStorage.setItem('user', JSON.stringify(data));
-        alert('Account created successfully!');
-        navigate('/dashboard');
+        setSuccess('Account created successfully! You can now login.');
+        
+        // Clear the form
+        setName('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
       } else {
         setError(data.message || 'Registration failed');
       }
     } catch (err) {
-      setError('Something went wrong. Make sure the backend is running.');
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -52,12 +76,26 @@ function Register() {
         Register as a Customer
       </p>
 
+      {success && (
+        <div style={{
+          backgroundColor: '#dcfce7',
+          color: '#166534',
+          padding: '14px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          textAlign: 'center',
+          fontWeight: '500'
+        }}>
+          {success}
+        </div>
+      )}
+
       {error && (
         <div style={{
           backgroundColor: '#fee2e2',
           color: '#b91c1c',
-          padding: '12px',
-          borderRadius: '6px',
+          padding: '14px',
+          borderRadius: '8px',
           marginBottom: '20px',
           textAlign: 'center'
         }}>
@@ -90,7 +128,7 @@ function Register() {
           />
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>Password</label>
           <input
             type="password"
@@ -103,6 +141,19 @@ function Register() {
           />
         </div>
 
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>Confirm Password</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength="6"
+            style={inputStyle}
+            placeholder="Type the password again"
+          />
+        </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -111,7 +162,7 @@ function Register() {
             backgroundColor: '#1e3a8a',
             color: 'white',
             border: 'none',
-            padding: '12px',
+            padding: '13px',
             borderRadius: '6px',
             fontSize: '16px',
             fontWeight: 'bold',
@@ -134,10 +185,11 @@ function Register() {
 
 const inputStyle = {
   width: '100%',
-  padding: '11px',
+  padding: '12px',
   borderRadius: '6px',
   border: '1px solid #ccc',
-  fontSize: '15px'
+  fontSize: '15px',
+  boxSizing: 'border-box'
 };
 
 export default Register;

@@ -107,6 +107,11 @@ function Login() {
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
+        <p style={{ textAlign: 'center', marginTop: '15px' }}>
+  <Link to="/forgot-password" style={{ color: '#1e3a8a' }}>
+    Forgot Password?
+  </Link>
+</p>
       </form>
 
       <p style={{ textAlign: 'center', marginTop: '25px' }}>
