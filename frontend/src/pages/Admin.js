@@ -109,10 +109,6 @@ function Admin() {
   const handleAddProduct = async (e) => {
     e.preventDefault();
 
-    if (!imageFile) {
-      alert('Please select an image');
-      return;
-    }
 
     const data = new FormData();
     data.append('name', formData.name);
@@ -383,8 +379,7 @@ function Admin() {
             <input 
               type="file" 
               accept="image/*" 
-              onChange={handleImageChange} 
-              required 
+              onChange={handleImageChange}  
               style={{ width: '100%' }} 
             />
           </div>

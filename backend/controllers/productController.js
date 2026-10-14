@@ -31,7 +31,7 @@ const createProduct = async (req, res) => {
     // Get image URLs from Cloudinary
    let images = [];
 if (req.files && req.files.length > 0) {
-  images = req.files.map(file => `http://localhost:5000/uploads/${file.filename}`);
+  images = req.files.map((file) => file.path);
 }
     
 
