@@ -56,13 +56,25 @@ if (req.files && req.files.length > 0) {
 // @desc    Update a product
 const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const updateData = { ...req.body };
+
+    if (req.body.price) {
+      updateData.price = Number(req.body.price);
+    }
+
+    if (req.files && req.files.length > 0) {
+      updateData.images = req.files.map((file) => file.path);
+    }
+
+    const product = await Product.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     });
+
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
+
     res.status(200).json(product);
   } catch (error) {
     res.status(400).json({ message: error.message });

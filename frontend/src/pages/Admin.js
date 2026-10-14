@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../services/api';
 
+const API = 'https://supa-steel-structures.onrender.com/api';
+
 function Admin() {
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -20,19 +23,13 @@ function Admin() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    
     if (!storedUser) {
       navigate('/login');
       return;
     }
-
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
-
-    if (parsedUser.role !== 'admin') {
-      return;
-    }
-
+    if (parsedUser.role !== 'admin') return;
     loadProducts();
     loadOrders();
   }, [navigate]);
@@ -44,7 +41,7 @@ function Admin() {
 
   const loadOrders = async () => {
     try {
-      const response = await fetch('https://supa-steel-structures.onrender.com/api/orders');
+      const response = await fetch(`${API}/orders`);
       const data = await response.json();
       setOrders(data);
     } catch (error) {
@@ -59,16 +56,37 @@ function Admin() {
     navigate('/login');
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      category: 'Desk',
+      description: '',
+      price: '',
+      timeframe: ''
+    });
+    setImageFile(null);
+    setEditingId(null);
+  };
+
+  const handleEditClick = (product) => {
+    setEditingId(product._id);
+    setFormData({
+      name: product.name || '',
+      category: product.category || 'Desk',
+      description: product.description || '',
+      price: product.price || '',
+      timeframe: product.timeframe || ''
+    });
+    setImageFile(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
-
     try {
-      const response = await fetch(`https://supa-steel-structures.onrender.com/api/products/${id}`, {
-        method: 'DELETE',
-      });
-
+      const response = await fetch(`${API}/products/${id}`, { method: 'DELETE' });
       if (response.ok) {
-        setProducts(products.filter(product => product._id !== id));
+        setProducts(products.filter((p) => p._id !== id));
         alert('Product deleted successfully');
       } else {
         alert('Failed to delete product');
@@ -80,16 +98,13 @@ function Admin() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`https://supa-steel-structures.onrender.com/api/orders/${orderId}`, {
+      const response = await fetch(`${API}/orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus })
       });
-
       if (response.ok) {
-        setOrders(orders.map(order => 
-          order._id === orderId ? { ...order, status: newStatus } : order
-        ));
+        setOrders(orders.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
       } else {
         alert('Failed to update status');
       }
@@ -106,36 +121,87 @@ function Admin() {
     setImageFile(e.target.files[0]);
   };
 
-  const handleAddProduct = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // EDIT existing product
+    if (editingId) {
+      try {
+        // If new image selected, use FormData
+        if (imageFile) {
+          const data = new FormData();
+          data.append('name', formData.name);
+          data.append('category', formData.category);
+          data.append('description', formData.description);
+          data.append('price', formData.price);
+          data.append('timeframe', formData.timeframe);
+          data.append('images', imageFile);
 
+          const response = await fetch(`${API}/products/${editingId}`, {
+            method: 'PUT',
+            body: data
+          });
+
+          if (response.ok) {
+            const updated = await response.json();
+            setProducts(products.map((p) => (p._id === editingId ? updated : p)));
+            alert('Product updated successfully!');
+            resetForm();
+            e.target.reset();
+          } else {
+            alert('Failed to update product');
+          }
+        } else {
+          // No new image - send JSON
+          const response = await fetch(`${API}/products/${editingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: formData.name,
+              category: formData.category,
+              description: formData.description,
+              price: Number(formData.price),
+              timeframe: formData.timeframe
+            })
+          });
+
+          if (response.ok) {
+            const updated = await response.json();
+            setProducts(products.map((p) => (p._id === editingId ? updated : p)));
+            alert('Product updated successfully!');
+            resetForm();
+          } else {
+            alert('Failed to update product');
+          }
+        }
+      } catch (error) {
+        alert('Error updating product');
+      }
+      return;
+    }
+
+    // ADD new product
     const data = new FormData();
     data.append('name', formData.name);
     data.append('category', formData.category);
     data.append('description', formData.description);
     data.append('price', formData.price);
     data.append('timeframe', formData.timeframe);
-    data.append('images', imageFile);
+    if (imageFile) {
+      data.append('images', imageFile);
+    }
 
     try {
-      const response = await fetch('https://supa-steel-structures.onrender.com/api/products', {
+      const response = await fetch(`${API}/products`, {
         method: 'POST',
-        body: data,
+        body: data
       });
 
       if (response.ok) {
-        const savedProduct = await response.json();
-        setProducts([...products, savedProduct]);
+        const saved = await response.json();
+        setProducts([...products, saved]);
         alert('Product added successfully!');
-        setFormData({
-          name: '',
-          category: 'Desk',
-          description: '',
-          price: '',
-          timeframe: ''
-        });
-        setImageFile(null);
+        resetForm();
         e.target.reset();
       } else {
         alert('Failed to add product');
@@ -145,9 +211,7 @@ function Admin() {
     }
   };
 
-  if (!user) {
-    return <p>Redirecting to login...</p>;
-  }
+  if (!user) return <p>Redirecting to login...</p>;
 
   if (user.role !== 'admin') {
     return (
@@ -174,9 +238,9 @@ function Admin() {
 
   return (
     <div>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
         gap: '10px',
@@ -202,7 +266,7 @@ function Admin() {
 
       <p style={{ marginBottom: '25px' }}>Welcome, {user.name} (Admin)</p>
 
-      {/* ========== CUSTOMER REQUESTS ========== */}
+      {/* CUSTOMER REQUESTS */}
       <div style={{ marginBottom: '40px' }}>
         <h2 style={{ color: '#1e3a8a', fontSize: '20px' }}>
           Customer Requests ({orders.length})
@@ -214,7 +278,7 @@ function Admin() {
           <p style={{ color: '#666' }}>No customer requests yet.</p>
         ) : (
           <div style={{ marginTop: '15px' }}>
-            {orders.map(order => (
+            {orders.map((order) => (
               <div key={order._id} style={{
                 border: '1px solid #ddd',
                 borderRadius: '10px',
@@ -237,12 +301,7 @@ function Admin() {
                   </p>
                 </div>
 
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '10px',
-                  marginBottom: '12px'
-                }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
                   <select
                     value={order.status}
                     onChange={(e) => handleStatusChange(order._id, e.target.value)}
@@ -296,7 +355,7 @@ function Admin() {
         )}
       </div>
 
-      {/* ========== ADD PRODUCT FORM ========== */}
+      {/* ADD / EDIT PRODUCT FORM */}
       <div style={{
         backgroundColor: '#f8fafc',
         padding: '20px',
@@ -304,28 +363,25 @@ function Admin() {
         border: '1px solid #e2e8f0',
         marginBottom: '40px'
       }}>
-        <h2 style={{ marginTop: 0, color: '#1e3a8a', fontSize: '20px' }}>Add New Product</h2>
+        <h2 style={{ marginTop: 0, color: '#1e3a8a', fontSize: '20px' }}>
+          {editingId ? 'Edit Product' : 'Add New Product'}
+        </h2>
 
-        <form onSubmit={handleAddProduct}>
+        <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '12px' }}>
-            <input 
-              type="text" 
-              name="name" 
-              placeholder="Product Name" 
-              value={formData.name} 
-              onChange={handleChange} 
-              required 
-              style={inputStyle} 
+            <input
+              type="text"
+              name="name"
+              placeholder="Product Name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              style={inputStyle}
             />
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <select 
-              name="category" 
-              value={formData.category} 
-              onChange={handleChange} 
-              style={inputStyle}
-            >
+            <select name="category" value={formData.category} onChange={handleChange} style={inputStyle}>
               <option value="Desk">Desk</option>
               <option value="Gate">Gate</option>
               <option value="Door">Door</option>
@@ -337,79 +393,95 @@ function Admin() {
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <textarea 
-              name="description" 
-              placeholder="Description" 
-              value={formData.description} 
-              onChange={handleChange} 
-              required 
-              rows="3" 
-              style={inputStyle} 
+            <textarea
+              name="description"
+              placeholder="Description"
+              value={formData.description}
+              onChange={handleChange}
+              required
+              rows="3"
+              style={inputStyle}
             />
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <input 
-              type="number" 
-              name="price" 
-              placeholder="Price (e.g. 220000)" 
-              value={formData.price} 
-              onChange={handleChange} 
-              required 
-              style={inputStyle} 
+            <input
+              type="number"
+              name="price"
+              placeholder="Price (e.g. 220000)"
+              value={formData.price}
+              onChange={handleChange}
+              required
+              style={inputStyle}
             />
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <input 
-              type="text" 
-              name="timeframe" 
-              placeholder="Timeframe (e.g. 7-10 working days)" 
-              value={formData.timeframe} 
-              onChange={handleChange} 
-              required 
-              style={inputStyle} 
+            <input
+              type="text"
+              name="timeframe"
+              placeholder="Timeframe (e.g. 7-10 working days)"
+              value={formData.timeframe}
+              onChange={handleChange}
+              required
+              style={inputStyle}
             />
           </div>
 
           <div style={{ marginBottom: '18px' }}>
             <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold', fontSize: '14px' }}>
-              Product Image
+              {editingId ? 'New Image (optional)' : 'Product Image'}
             </label>
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={handleImageChange}  
-              style={{ width: '100%' }} 
-            />
+            <input type="file" accept="image/*" onChange={handleImageChange} style={{ width: '100%' }} />
           </div>
 
-          <button 
-            type="submit" 
-            style={{
-              backgroundColor: '#1e3a8a',
-              color: 'white',
-              border: 'none',
-              padding: '13px',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              width: '100%',
-              fontSize: '16px'
-            }}
-          >
-            Add Product
-          </button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="submit"
+              style={{
+                backgroundColor: '#1e3a8a',
+                color: 'white',
+                border: 'none',
+                padding: '13px 20px',
+                borderRadius: '6px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '16px',
+                flex: 1
+              }}
+            >
+              {editingId ? 'Update Product' : 'Add Product'}
+            </button>
+
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                style={{
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  border: 'none',
+                  padding: '13px 20px',
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '16px'
+                }}
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
-      {/* ========== PRODUCT LIST ========== */}
+      {/* PRODUCT LIST */}
       <h2 style={{ color: '#1e3a8a', fontSize: '20px' }}>
         All Products ({products.length})
       </h2>
 
       <div style={{ marginTop: '15px' }}>
-        {products.map(product => (
+        {products.map((product) => (
           <div key={product._id} style={{
             border: '1px solid #ddd',
             borderRadius: '8px',
@@ -419,22 +491,22 @@ function Admin() {
           }}>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
               {product.images && product.images[0] ? (
-                <img 
-                  src={product.images[0]} 
-                  alt={product.name} 
-                  style={{ 
-                    width: '70px', 
-                    height: '55px', 
-                    objectFit: 'cover', 
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  style={{
+                    width: '70px',
+                    height: '55px',
+                    objectFit: 'cover',
                     borderRadius: '6px',
                     flexShrink: 0
-                  }} 
+                  }}
                 />
               ) : (
-                <div style={{ 
-                  width: '70px', 
-                  height: '55px', 
-                  backgroundColor: '#e5e7eb', 
+                <div style={{
+                  width: '70px',
+                  height: '55px',
+                  backgroundColor: '#e5e7eb',
                   borderRadius: '6px',
                   display: 'flex',
                   alignItems: 'center',
@@ -457,21 +529,38 @@ function Admin() {
               </div>
             </div>
 
-            <button 
-              onClick={() => handleDelete(product._id)} 
-              style={{
-                backgroundColor: '#dc2626',
-                color: 'white',
-                border: 'none',
-                padding: '10px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                width: '100%',
-                fontWeight: 'bold'
-              }}
-            >
-              Delete
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => handleEditClick(product)}
+                style={{
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  width: '50%',
+                  fontWeight: 'bold'
+                }}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(product._id)}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  width: '50%',
+                  fontWeight: 'bold'
+                }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
