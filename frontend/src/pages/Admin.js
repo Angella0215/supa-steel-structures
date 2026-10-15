@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../services/api';
 
-const API = 'http://localhost:10000/api';
+const API = 'https://supa-steel-structures.onrender.com/api';
 
 function Admin() {
   const [user, setUser] = useState(null);
