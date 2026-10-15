@@ -9,6 +9,8 @@ function Admin() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [announcements, setAnnouncements] = useState([]);
+  const [announcementForm, setAnnouncementForm] = useState({ title: '', message: '' });
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate();
 
@@ -32,6 +34,7 @@ function Admin() {
     if (parsedUser.role !== 'admin') return;
     loadProducts();
     loadOrders();
+    loadAnnouncements();
   }, [navigate]);
 
   const loadProducts = async () => {
@@ -50,6 +53,16 @@ function Admin() {
       setLoadingOrders(false);
     }
   };
+
+  const loadAnnouncements = async () => {
+  try {
+    const response = await fetch('https://supa-steel-structures.onrender.com/api/announcements');
+    const data = await response.json();
+    setAnnouncements(data);
+  } catch (error) {
+    console.error('Failed to load announcements');
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -179,6 +192,163 @@ function Admin() {
       }
       return;
     }
+
+    const handleAnnouncementChange = (e) => {
+  setAnnouncementForm({ ...announcementForm, [e.target.name]: e.target.value });
+};
+
+const handleAddAnnouncement = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await fetch('https://supa-steel-structures.onrender.com/api/announcements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: announcementForm.title,
+        message: announcementForm.message,
+        isActive: true
+      })
+    });
+    if (response.ok) {
+      const saved = await response.json();
+      setAnnouncements([saved, ...announcements]);
+      setAnnouncementForm({ title: '', message: '' });
+      alert('Announcement added!');
+    } else {
+      alert('Failed to add announcement');
+    }
+  } catch (error) {
+    alert('Error adding announcement');
+  }
+};
+
+const handleToggleAnnouncement = async (id, currentStatus) => {
+  try {
+    const response = await fetch(`https://supa-steel-structures.onrender.com/api/announcements/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: !currentStatus })
+    });
+    if (response.ok) {
+      const updated = await response.json();
+      setAnnouncements(announcements.map((a) => (a._id === id ? updated : a)));
+    }
+  } catch (error) {
+    alert('Error updating announcement');
+  }
+};
+
+const handleDeleteAnnouncement = async (id) => {
+  if (!window.confirm('Delete this announcement?')) return;
+  try {
+    const response = await fetch(`https://supa-steel-structures.onrender.com/api/announcements/${id}`, {
+      method: 'DELETE'
+    });
+    if (response.ok) {
+      setAnnouncements(announcements.filter((a) => a._id !== id));
+    }
+  } catch (error) {
+    alert('Error deleting announcement');
+  }
+};
+
+{/* ANNOUNCEMENTS */}
+<div style={{
+  backgroundColor: '#fffbeb',
+  padding: '20px',
+  borderRadius: '10px',
+  border: '1px solid #fde68a',
+  marginBottom: '40px'
+}}>
+  <h2 style={{ marginTop: 0, color: '#1e3a8a', fontSize: '20px' }}>
+    Announcements / Offers
+  </h2>
+  <p style={{ color: '#666', fontSize: '14px' }}>
+    Add offers here. Turn them off or delete when the offer is over.
+  </p>
+
+  <form onSubmit={handleAddAnnouncement} style={{ marginBottom: '20px' }}>
+    <input
+      type="text"
+      name="title"
+      placeholder="Title (e.g. 20% Discount on First Service)"
+      value={announcementForm.title}
+      onChange={handleAnnouncementChange}
+      required
+      style={{ ...inputStyle, marginBottom: '10px' }}
+    />
+    <textarea
+      name="message"
+      placeholder="Message details..."
+      value={announcementForm.message}
+      onChange={handleAnnouncementChange}
+      required
+      rows="3"
+      style={{ ...inputStyle, marginBottom: '10px' }}
+    />
+    <button
+      type="submit"
+      style={{
+        backgroundColor: '#f59e0b',
+        color: 'white',
+        border: 'none',
+        padding: '12px 20px',
+        borderRadius: '6px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        width: '100%'
+      }}
+    >
+      Add Announcement
+    </button>
+  </form>
+
+  {announcements.map((item) => (
+    <div key={item._id} style={{
+      border: '1px solid #ddd',
+      borderRadius: '8px',
+      padding: '14px',
+      marginBottom: '10px',
+      backgroundColor: 'white'
+    }}>
+      <strong>{item.title}</strong>
+      <p style={{ margin: '6px 0', fontSize: '14px', whiteSpace: 'pre-line' }}>{item.message}</p>
+      <p style={{ fontSize: '12px', color: item.isActive ? '#166534' : '#991b1b' }}>
+        Status: {item.isActive ? 'Active (showing on Home)' : 'Hidden'}
+      </p>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          onClick={() => handleToggleAnnouncement(item._id, item.isActive)}
+          style={{
+            backgroundColor: item.isActive ? '#6b7280' : '#16a34a',
+            color: 'white',
+            border: 'none',
+            padding: '8px 12px',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            flex: 1
+          }}
+        >
+          {item.isActive ? 'Hide' : 'Show'}
+        </button>
+        <button
+          onClick={() => handleDeleteAnnouncement(item._id)}
+          style={{
+            backgroundColor: '#dc2626',
+            color: 'white',
+            border: 'none',
+            padding: '8px 12px',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            flex: 1
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
 
     // ADD new product
     const data = new FormData();

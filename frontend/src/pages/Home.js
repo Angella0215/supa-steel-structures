@@ -1,4 +1,21 @@
+import { useEffect, useState } from 'react';
+
 function Home() {
+  const [announcements, setAnnouncements] = useState([]);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await fetch('https://supa-steel-structures.onrender.com/api/announcements/active');
+        const data = await response.json();
+        setAnnouncements(data);
+      } catch (error) {
+        console.error('Failed to load announcements');
+      }
+    };
+    fetchAnnouncements();
+  }, []);
+
   const featuredProducts = [
     {
       id: 1,
@@ -39,11 +56,11 @@ function Home() {
         padding: '50px 20px',
         borderRadius: '12px',
         textAlign: 'center',
-        marginBottom: '40px'
+        marginBottom: '30px'
       }}>
-        <h1 style={{ 
-          fontSize: 'clamp(28px, 6vw, 42px)', 
-          marginBottom: '15px', 
+        <h1 style={{
+          fontSize: 'clamp(28px, 6vw, 42px)',
+          marginBottom: '15px',
           color: 'white',
           fontWeight: '700'
         }}>
@@ -53,7 +70,7 @@ function Home() {
           Engineering Your Ideas To Reality
         </h2>
         <p style={{ fontSize: '16px', maxWidth: '700px', margin: '0 auto 30px', color: '#f1f5f9', lineHeight: '1.6' }}>
-          We design and fabricate high-quality steel products. 
+          We design and fabricate high-quality steel products.
           Get AutoCAD drawings of your project before fabrication and welding begins.
         </p>
         <a href="/products" style={{
@@ -69,6 +86,32 @@ function Home() {
           View All Products
         </a>
       </div>
+
+      {/* Announcements / Offers */}
+      {announcements.length > 0 && (
+        <div style={{ marginBottom: '40px' }}>
+          {announcements.map((item) => (
+            <div
+              key={item._id}
+              style={{
+                backgroundColor: '#1e3a8a',
+                color: 'white',
+                padding: '20px',
+                borderRadius: '12px',
+                marginBottom: '15px',
+                borderLeft: '6px solid #fbbf24'
+              }}
+            >
+              <h3 style={{ margin: '0 0 8px 0', color: '#fbbf24', fontSize: '20px' }}>
+                {item.title}
+              </h3>
+              <p style={{ margin: 0, lineHeight: '1.5', whiteSpace: 'pre-line' }}>
+                {item.message}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Featured Products */}
       <h2 style={{ marginBottom: '20px', color: '#1e3a8a', fontSize: '24px' }}>Featured Products</h2>
@@ -126,10 +169,10 @@ function Home() {
 
       {/* Why Choose Us */}
       <h2 style={{ marginBottom: '20px', color: '#1e3a8a', fontSize: '24px' }}>Why Choose Supa Steel Structures?</h2>
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
-        gap: '20px' 
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+        gap: '20px'
       }}>
         <div style={featureBox}>
           <h3 style={{ color: '#1e3a8a', marginTop: 0 }}>AutoCAD Drawings</h3>

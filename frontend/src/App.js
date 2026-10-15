@@ -45,9 +45,16 @@ function App() {
           boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
           position: 'relative'
         }}>
-          <div style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>
-            Supa Steel Structures
-          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+  <img
+    src="/images/logo.jpg"
+    alt="Supa Steel Structures"
+    style={{ height: '40px', width: '40px', objectFit: 'contain', backgroundColor: 'white', borderRadius: '6px', padding: '4px' }}
+  />
+  <span style={{ color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
+    Supa Steel Structures
+  </span>
+</div>
 
           {/* Hamburger button (mobile) */}
           <button
